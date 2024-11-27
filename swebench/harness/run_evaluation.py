@@ -540,7 +540,7 @@ def main(
     predictions = {pred[KEY_INSTANCE_ID]: pred for pred in predictions}
 
     # get dataset from predictions
-    dataset = get_dataset_from_preds(dataset_name, split, instance_ids, predictions, run_id, exclude_x86)
+    dataset = get_dataset_from_preds(dataset_name, split, instance_ids, predictions, run_id, exclude_x86=exclude_x86)
     full_dataset = load_swebench_dataset(dataset_name, split, instance_ids)
     existing_images = list_images(client)
     print(f"Running {len(dataset)} unevaluated instances...")
