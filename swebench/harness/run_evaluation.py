@@ -24,6 +24,7 @@ from swebench.harness.constants import (
     LOG_INSTANCE,
     LOG_TEST_OUTPUT,
     RUN_EVALUATION_LOG_DIR,
+    USE_X86,
     UTF8,
 )
 from swebench.harness.docker_utils import (
@@ -303,7 +304,8 @@ def get_dataset_from_preds(
         instance_ids: list,
         predictions: dict,
         run_id: str,
-        exclude_completed: bool = True
+        exclude_completed: bool = True,
+        exclude_x86: bool = False,
     ):
     """
     Return only instances that have predictions and are in the dataset.
@@ -315,9 +317,11 @@ def get_dataset_from_preds(
     dataset_ids = {i[KEY_INSTANCE_ID] for i in dataset}
 
     # Remove predictions for instances not in the dataset
-    for id in list(predictions.keys()):
-        if id not in dataset_ids:
-            del predictions[id]
+    predictions = {k: v for k, v in predictions.items() if k in dataset_ids}
+
+    # Remove predictions that need x86
+    if exclude_x86:
+        predictions = {k: v for k, v in predictions.items() if k not in USE_X86}
 
     if instance_ids:
         # check that all instance IDs have predictions
@@ -510,6 +514,7 @@ def main(
         open_file_limit: int,
         run_id: str,
         timeout: int,
+        exclude_x86: bool,
     ):
     """
     Run evaluation harness for the given dataset and predictions.
@@ -535,7 +540,7 @@ def main(
     predictions = {pred[KEY_INSTANCE_ID]: pred for pred in predictions}
 
     # get dataset from predictions
-    dataset = get_dataset_from_preds(dataset_name, split, instance_ids, predictions, run_id)
+    dataset = get_dataset_from_preds(dataset_name, split, instance_ids, predictions, run_id, exclude_x86)
     full_dataset = load_swebench_dataset(dataset_name, split, instance_ids)
     existing_images = list_images(client)
     print(f"Running {len(dataset)} unevaluated instances...")
@@ -578,6 +583,7 @@ if __name__ == "__main__":
         "--clean", type=str2bool, default=False, help="Clean images above cache level"
     )
     parser.add_argument("--run_id", type=str, required=True, help="Run ID - identifies the run")
+    parser.add_argument("--exclude_x86", type=str2bool, default=False, help="Exclude x86 instances")
     args = parser.parse_args()
 
     main(**vars(args))
