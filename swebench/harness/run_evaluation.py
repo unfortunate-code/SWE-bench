@@ -583,7 +583,7 @@ if __name__ == "__main__":
         "--clean", type=str2bool, default=False, help="Clean images above cache level"
     )
     parser.add_argument("--run_id", type=str, required=True, help="Run ID - identifies the run")
-    parser.add_argument("--exclude_x86", type=str2bool, default=False, help="Exclude x86 instances")
+    parser.add_argument("--exclude_x86", action="store_true", help="Exclude x86 instances")
     args = parser.parse_args()
 
     main(**vars(args))
